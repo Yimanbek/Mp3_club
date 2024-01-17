@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.crypto import get_random_string
-
 class UserManager(BaseUserManager):
     use_in_migrations = True
 

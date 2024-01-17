@@ -1,10 +1,9 @@
-<!-- registration.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration</title>
+    <title>Create Album</title>
     <!-- Добавьте свои стили или используйте внешние библиотеки стилей -->
     <style>
         body {
@@ -61,65 +60,32 @@
 
         .error-message {
             color: red;
-            font-size: 14px;
             margin-bottom: 10px;
-        }
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .checkbox-label input {
-            margin-right: 5px;
         }
     </style>
 </head>
 <body>
     <div class="form-container">
-        <h2>Registration</h2>
-
-        <!-- Вывод сообщения об ошибке -->
-        {% if errors %}
-            <div class="error-message">
-                {% for field, error_list in errors.items %}
-                    <p>{{ field }}: {{ error_list.0 }}</p>
-                {% endfor %}
-            </div>
+        <h2>Create Album</h2>
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
         {% endif %}
-
-        <form method="post" action="{% url 'registration' %}">
+        <form method="post" action="{% url 'create_album' %}" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" name="email" id="email" required>
+                <label for="id_title">Title:</label>
+                <input type="text" name="title" id="id_title" required>
             </div>
             <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" name="password" id="password" required>
+                <label for="id_image">Image:</label>
+                <input type="file" name="image" id="id_image" accept="image/*" required>
             </div>
             <div class="form-group">
-                <label for="password_confirmation">Confirm Password:</label>
-                <input type="password" name="password_confirmation" id="password_confirmation" required>
+                <label for="id_token">Authorization Token:</label>
+                <input type="text" name="token" id="id_token" required>
             </div>
             <div class="form-group">
-                <label for="first_name">First Name:</label>
-                <input type="text" name="first_name" id="first_name" required>
-            </div>
-            <div class="form-group">
-                <label for="last_name">Last Name:</label>
-                <input type="text" name="last_name" id="last_name" required>
-            </div>
-            <div class="form-group">
-                <label for="username">User name:</label>
-                <input type="text" name="username" id="username" required>
-            </div>
-            <div class="checkbox-label">
-                <input type="checkbox" name="is_author" id="is_author">
-                <label for="is_author">Я автор</label>
-            </div>    
-            <div class="form-group">
-                <button type="submit">Register</button>
+                <button type="submit">Create Album</button>
             </div>
         </form>
     </div>
