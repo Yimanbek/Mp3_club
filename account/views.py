@@ -16,7 +16,7 @@ from .send_email import send_confirmation_email,send_confirmation_password
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from django.contrib import messages
-
+from mp3_club.tasks import send_confirmation_email_task,send_confirmation_password_task
 User = get_user_model()
 
 class RegistrationView(APIView):
@@ -33,7 +33,7 @@ class RegistrationView(APIView):
             user = serializer.save(is_author=is_author)
             if user:
                 try:
-                    send_confirmation_email(user.email, user.activation_code)
+                    send_confirmation_email_task.delay(user.email, user.activation_code)
                     return redirect('dashboard')
                 except:
                     return Response({'message': "Зарегистрировался, но на почту код не отправился", 'data': serializer.data}, status=201)
@@ -43,6 +43,7 @@ class RegistrationView(APIView):
 
 def activation_view(request):
     return render(request, 'activation.html')
+
 
 class DashboardView(View):
     templates_name = 'dashboard.html'
@@ -62,32 +63,42 @@ class DashboardView(View):
             return render(request, self.templates_name, {'error': error_message})
 
         
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.views import View
+from django.contrib import messages
+import logging
 
+logger = logging.getLogger(__name__)
 class LoginView(View):
-    templates_name = 'login.html'
+    template_name = 'login.html'
     
     def get(self, request):
-        return render(request, self.templates_name)
+        return render(request, self.template_name)
     
     def post(self, request):
         email = request.POST.get('email')
         password = request.POST.get('password')
+        
         if not email or not password:
-            return render(request, self.templates_name, {'error': 'Email and Password are required!'})
+            return render(request, self.template_name, {'error': 'Email and Password are required!'})
         
         user = authenticate(request, email=email, password=password)
         
         if user is not None:
             login(request, user)
             token, created = Token.objects.get_or_create(user=user)
-            
-            if created:
-                return HttpResponseRedirect(reverse('dashboard') + f'?token={token.key}')
+
+            if token:
+                # logger.info('Редирект на music_website')
+                return redirect('music_website')
             else:
-                return HttpResponseRedirect(reverse('dashboard') + f'?token={token.key}')
+                # logger.error('Ошибка при получении токена')
+                return redirect('login')
         else:
             messages.error(request, 'Invalid email or password')
-            return render(request, self.templates_name)
+            # logger.warning('Неверный email или пароль')
+            return render(request, self.template_name, {'error': 'Invalid email or password'})
 
 
 class ActivationView(GenericAPIView):

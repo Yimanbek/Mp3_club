@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Albums
 
 class AlbumSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
+    owner = serializers.ReadOnlyField(source='owner.email')
 
     class Meta:
         model = Albums
@@ -14,7 +14,7 @@ class AlbumSerializer(serializers.ModelSerializer):
         return album
 
 class AlbumDetailSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
+    owner = serializers.ReadOnlyField(source='owner.email')
 
     class Meta:
         model = Albums

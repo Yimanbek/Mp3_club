@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from decouple import config
-from datetime import timedelta
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,7 +26,9 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG')
 
+# ALLOWED_HOSTS = ['2706-91-247-58-80.ngrok-free.app', 'localhost', '127.0.0.1']
 ALLOWED_HOSTS = []
+
 
 
 # Application definition
@@ -44,11 +46,17 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'dj_rest_auth',
+    'cachalot',
+    'django_celery_results',
+    'drf_api_logger',
 
 
 
+    'music',
+    'category',
     'albums',
     'account',
+    'like',
 ]
 
 MIDDLEWARE = [
@@ -67,7 +75,7 @@ ROOT_URLCONF = 'mp3_club.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -93,7 +101,7 @@ DATABASES = {
         'USER':config('USER'),
         'PASSWORD':config('PASSWORD'),
         'HOST':config('HOST'),
-        'POTR':'5432'
+        'PORT':'5432'
     }
 }
 
@@ -128,11 +136,10 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -163,3 +170,98 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+
+
+
+
+# CORS_ALLOWED_ORIGINS = [
+#     "https://2706-91-247-58-80.ngrok-free.app",
+#     "http://localhost:3000",  # Добавьте другие необходимые домены
+# ]
+
+
+
+
+
+
+
+# celery setting.
+CELERY_CACHE_BACKEND = 'default'
+
+
+
+# django setting.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'redis://127.0.0.1:6379',
+    }
+}
+
+
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = '6379'
+
+#Celery setting
+CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+# CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+
+
+#Celery result
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
+CELERY_CACHE_BACKEND_OPTIONS = {
+    'max_entries': 1000,
+    'cull_frequency': 3,
+}
+
+
+
+
+
+
+
+
+
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "main_format": {
+            "format": "[{asctime}-{levelname}] {module}-{filename}: {message}",
+            "style": "{",
+        }
+    },
+
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler',
+                    'formatter': 'main_format'},
+        'file': {
+            'class': 'logging.FileHandler',
+            'formatter': 'main_format',
+            'filename': '/home/yimanbek/Desktop/folder/Book_store/log.log',
+        }
+    },
+
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG'
+        },
+        'product': {
+            'handlers': ['file'],
+            'level': 'WARNING'
+        }
+    }
+}
+
+
+DRF_API_LOGGER_DATABASE = True
